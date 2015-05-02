@@ -22,7 +22,7 @@ m.figure = function(fig, x, y)
 end
 
 m.field = function(field)
-	m.figure(field, 0, 0)
+	m.figure(field, 0, 0) 
 end
 
 m.background = function(field)

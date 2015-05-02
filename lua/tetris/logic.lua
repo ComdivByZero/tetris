@@ -33,7 +33,7 @@ local FIGURES = {
 				{0, 1},
 				{0, 1},
 				{1, 1}
-			}, dx = 1, dy = 0
+			}, dx = 0, dy = 0
 		}
 	},
 	{	{	figure = {
@@ -116,7 +116,7 @@ local FIGURES = {
 	}
 }
 
-local function emptyLine(width)
+local emptyLine = function(width)
 	local l = {}
 	for i = 1, width do
 		l[i] = 0
@@ -147,7 +147,7 @@ m.addFigure = function(tetris, index, rotate)
 		x = #tetris.field[1] / 2 - 2 + f[rotate].dx,
 		y = 0,
 		f = f,
-		
+
 		rot = rotate
 	}
 	return not m.isFigureCollideField(tetris.field, f[rotate].figure, tetris.figure.x, tetris.figure.y)
@@ -160,7 +160,7 @@ m.addFigureRandom = function(tetris)
 end
 
 m.isFigureCollideField = function(field, figure, fx, fy)
-	local function isCollide(t, y)
+	local isCollide = function(t, y)
 		local x
 		x = 1
 		while	x <= #t
@@ -168,9 +168,9 @@ m.isFigureCollideField = function(field, figure, fx, fy)
 					(t[x] == 0)
 					or (
 						x + fx >= 1 and x + fx <= #field[1]
-						and  
+						and
 						y + fy >= 1 and y + fy <= #field
-						and 
+						and
 						field[fy + y][fx + x] == 0
 					)
 				)
@@ -232,7 +232,7 @@ m.embedCurrentFigureIntoField = function(tetris)
 end
 
 m.searchCompletedLines = function(field)
-	function fullLine(f)
+	local fullLine = function(f)
 		local i
 		i = 1
 		while i <= #f and f[i] ~= 0 do

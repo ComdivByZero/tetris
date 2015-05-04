@@ -1,13 +1,66 @@
+<!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Minimalistic tetris</title>
+		<meta charset="utf-8">
+		<title>Минималистичный Тетрис</title>
 	</head>
+	<style>
+		#arena {
+			width: 250px;
+			height: 500px;
+			float: left
+		}
+		#arrows {
+			width: 250px;
+			height: 500px;
+			background: #ccc;
+			float: left
+		}
+		#left, #right, #down, #up {
+			position: absolute;
+			width: 16mm;
+			height: 16mm
+		}
+		#left {
+			left: 280px;
+			top: 200px
+		}
+		#right {
+			left: 420px;
+			top: 200px
+		}
+		#down {
+			left: 350px;
+			top: 200px
+		}
+		#up {
+			left: 350px;
+			top: 130px
+		}
+		#pause, #new {
+			width: 122px;
+			height: 40px
+		}
+		h3 {
+			text-align:center
+		}
+	</style>
 	<body>
 		<div id='wrapper'>
 			<div id='arena'>
-			    <canvas id='canvas' width='250' height='500'>
+				<canvas id='canvas' width='250' height='500'>
 					Что за стыд. Ваш так называемый браузер не поддерживает canvas.
 				</canvas>
+			</div>
+			<div id='arrows'>
+				<button id='left'>←<br/>a</button>
+				<button id='right'>→<br/>d</button>
+				<button id='up'>↻<br/>w</button>
+				<button id='down'>↓<br/>s</button>
+
+				<button id='pause'>Перерыв</button>
+				<button id='new'>Новая игра</button>
+				<h3>Очки : <b id='score'>0</b></h3>
 			</div>
 		</div>
 		<script src='draw.js'></script>

@@ -260,6 +260,7 @@ var model;
             tetris.field.splice(lines[i], 1);
             tetris.field.splice(0, 0, emptyLine(tetris.field[0].length));
         }
+        return lines.length;
     }
     model.removeCompletedLines = removeCompletedLines;
 })(model || (model = {}));

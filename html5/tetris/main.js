@@ -1,76 +1,81 @@
 var main;
 (function (main_1) {
-    var GameState;
-    (function (GameState) {
-        GameState[GameState["PLAY"] = 0] = "PLAY";
-        GameState[GameState["PAUSE"] = 1] = "PAUSE";
-        GameState[GameState["END"] = 2] = "END";
-    })(GameState || (GameState = {}));
-    var KeyCode;
-    (function (KeyCode) {
-        KeyCode[KeyCode["N"] = 78] = "N";
-        KeyCode[KeyCode["P"] = 80] = "P";
-        KeyCode[KeyCode["ArrowUp"] = 38] = "ArrowUp";
-        KeyCode[KeyCode["ArrowDown"] = 40] = "ArrowDown";
-        KeyCode[KeyCode["ArrowLeft"] = 37] = "ArrowLeft";
-        KeyCode[KeyCode["ArrowRight"] = 39] = "ArrowRight";
-    })(KeyCode || (KeyCode = {}));
+    var GS_PLAY = 0, GS_PAUSE = 1, GS_END = 2, KC_N = 78, KC_P = 80, KC_W = 87, KC_S = 83, KC_A = 65, KC_D = 68, KC_ArrowUp = 38, KC_ArrowDown = 40, KC_ArrowLeft = 37, KC_ArrowRight = 39;
     var game;
-    function keydown(ke) {
-        var key;
-        if (!ke.repeat) {
-            key = ke.keyCode;
-            if (key == KeyCode.N) {
-                load();
-            }
-            else if (game.state == GameState.END) {
-            }
-            else if (game.state == GameState.PAUSE) {
-                game.state = GameState.PLAY;
-            }
-            else if (key == KeyCode.ArrowUp) {
-                model.tryToRotateCurrentFigure(game.tetris);
-            }
-            else if (key == KeyCode.ArrowDown) {
-                game.multstep = 8;
-            }
-            else if (key == KeyCode.ArrowLeft) {
-                model.tryToMoveCurrentFigure(game.tetris, -1, 0);
-                game.pressedLeft = -1;
-                game.pressedTStep = game.pressedStep * 3;
-            }
-            else if (key == KeyCode.ArrowRight) {
-                model.tryToMoveCurrentFigure(game.tetris, 1, 0);
-                game.pressedRight = 1;
-                game.pressedTStep = game.pressedStep * 3;
-            }
-            else if (key == KeyCode.P) {
-                game.state = GameState.PAUSE;
-            }
+    function keyCodeDown(key) {
+        if (key == KC_N) {
+            load();
+        }
+        else if (game.state == GS_END) {
+        }
+        else if (game.state == GS_PAUSE) {
+            game.state = GS_PLAY;
+        }
+        else if (key == KC_ArrowUp || key == KC_W) {
+            model.tryToRotateCurrentFigure(game.tetris);
+        }
+        else if (key == KC_ArrowDown || key == KC_S) {
+            game.multstep = 16;
+        }
+        else if (key == KC_ArrowLeft || key == KC_A) {
+            model.tryToMoveCurrentFigure(game.tetris, -1, 0);
+            game.pressedLeft = -1;
+            game.pressedTStep = game.pressedStep * 3;
+        }
+        else if (key == KC_ArrowRight || key == KC_D) {
+            model.tryToMoveCurrentFigure(game.tetris, 1, 0);
+            game.pressedRight = 1;
+            game.pressedTStep = game.pressedStep * 3;
+        }
+        else if (key == KC_P) {
+            game.state = GS_PAUSE;
         }
     }
-    function keyup(ke) {
-        var key;
-        key = ke.keyCode;
-        if (key == KeyCode.ArrowDown) {
+    function keydown(ke) {
+        if (!ke.repeat) {
+            keyCodeDown(ke.keyCode);
+        }
+    }
+    function keyCodeUp(key) {
+        if (key == KC_ArrowDown || key == KC_S) {
             game.multstep = 1;
         }
-        else if (key == KeyCode.ArrowLeft) {
+        else if (key == KC_ArrowLeft || key == KC_A) {
             game.pressedLeft = 0;
         }
-        else if (key == KeyCode.ArrowRight) {
+        else if (key == KC_ArrowRight || key == KC_D) {
             game.pressedRight = 0;
         }
     }
+    function keyup(ke) {
+        keyCodeUp(ke.keyCode);
+    }
     function lostFocus(e) {
-        if (game.state != GameState.END) {
-            game.state = GameState.PAUSE;
+        if (game.state != GS_END) {
+            game.state = GS_PAUSE;
         }
+    }
+    function setKey(id, keyCode) {
+        var l = document.getElementById(id);
+        l.ontouchstart = function (te) {
+            keyCodeDown(keyCode);
+            l.onmousedown = null;
+        };
+        l.onmousedown = function (me) {
+            keyCodeDown(keyCode);
+        };
+        l.ontouchend = function (te) {
+            keyCodeUp(keyCode);
+            l.onmouseup = null;
+        };
+        l.onmouseup = function (me) {
+            keyCodeUp(keyCode);
+        };
     }
     function load() {
         game = {
-            state: GameState.PLAY,
-            step: 0.3,
+            state: GS_PLAY,
+            step: 1.0,
             dstep: 0.001,
             tstep: 0.3,
             multstep: 1,
@@ -79,6 +84,7 @@ var main;
             pressedStep: 0.1,
             pressedTStep: 0.1 * 2,
             prevTime: -1,
+            score: 0,
             tetris: model.createClassic()
         };
         draw.init(game.tetris);
@@ -86,12 +92,18 @@ var main;
         window.onkeydown = keydown;
         window.onkeyup = keyup;
         window.onblur = lostFocus;
+        setKey('left', KC_ArrowLeft);
+        setKey('right', KC_ArrowRight);
+        setKey('up', KC_ArrowUp);
+        setKey('down', KC_ArrowDown);
+        setKey('pause', KC_P);
+        setKey('new', KC_N);
     }
     function update(time) {
         var dt, dx;
         if (game.prevTime >= 0) {
             dt = (time - game.prevTime) / 1000;
-            if (game.state == GameState.PLAY) {
+            if (game.state == GS_PLAY) {
                 game.tstep = game.tstep - dt * game.multstep;
                 game.step = game.step - dt * game.dstep;
                 if (game.tstep <= 0) {
@@ -100,9 +112,10 @@ var main;
                         game.pressedLeft = 0;
                         game.pressedRight = 0;
                         model.embedCurrentFigureIntoField(game.tetris);
-                        model.removeCompletedLines(game.tetris);
+                        game.score += ((1 << model.removeCompletedLines(game.tetris)) - 1) * 100;
+                        document.getElementById('score').textContent = '' + game.score;
                         if (!model.addFigureRandom(game.tetris)) {
-                            game.state = GameState.END;
+                            game.state = GS_END;
                         }
                     }
                     game.tstep = game.step;

@@ -13,8 +13,10 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./autoplay.ts",
         "./draw.ts",
         "./main.ts",
-        "./model.ts"
+        "./model.ts",
+        "./solver.ts"
     ]
 }

@@ -10,6 +10,7 @@ module model {
 		x : number
 		y : number
 		f : FigureField[]
+		index: number
 		rot: number
 	}
 
@@ -18,7 +19,7 @@ module model {
 		figure: Figure
 	}
 
-	const FIGURES : FigureField[][] = [
+	export const FIGURES : FigureField[][] = [
 		[	{	figure : [
 					[1],
 					[1],
@@ -197,16 +198,17 @@ module model {
 		return y < figure.length
 	}
 
-	export function addFigure(tetris: Tetris, index: number, rotate: number) {
+	export function addFigure(tetris: Tetris, ind: number, rotate: number) {
 		var f: FigureField[]
 
-		f = FIGURES[index]
+		f = FIGURES[ind]
 
 		assert(f != null)
 		tetris.figure = {
 			x : tetris.field[0].length / 2 - 2 + f[rotate].dx,
 			y : 0,
 			f : f,
+			index : ind,
 			rot : rotate
 		}
 		return !isFigureCollideField(tetris.field, f[rotate].figure, tetris.figure.x, tetris.figure.y)
@@ -245,7 +247,6 @@ module model {
 		return setFigurePositionInFieldIfAble(tetris.field, tetris.figure, rot, 0, 0)
 	}
 
-
 	export function embedFigureIntoField(field : number[][], fig: Figure) {
 		var x, y: number,
 			f: number[][]
@@ -269,7 +270,7 @@ module model {
 		tetris.figure = null
 	}
 
-	export function searchCompletedLines(field: number[][]) {
+	export function searchCompletedLines(field: number[][]): number[] {
 		function fullLine(f: number[]) {
 			var i: number
 			i = 0
@@ -302,4 +303,12 @@ module model {
 		return lines.length
 	}
 
+	export function clean(t: Tetris) {
+		t.figure = null
+		for (var i = 0; i < t.field.length; i++) {
+			for (var j = 0; j < t.field[i].length; ++j) {
+				t.field[i][j] = 0
+			}
+		}
+	}
 }

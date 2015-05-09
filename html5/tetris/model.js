@@ -1,6 +1,6 @@
 var model;
 (function (model) {
-    var FIGURES = [
+    model.FIGURES = [
         [{ figure: [
                     [1],
                     [1],
@@ -169,14 +169,15 @@ var model;
         return y < figure.length;
     }
     model.isFigureCollideField = isFigureCollideField;
-    function addFigure(tetris, index, rotate) {
+    function addFigure(tetris, ind, rotate) {
         var f;
-        f = FIGURES[index];
+        f = model.FIGURES[ind];
         assert(f != null);
         tetris.figure = {
             x: tetris.field[0].length / 2 - 2 + f[rotate].dx,
             y: 0,
             f: f,
+            index: ind,
             rot: rotate
         };
         return !isFigureCollideField(tetris.field, f[rotate].figure, tetris.figure.x, tetris.figure.y);
@@ -184,8 +185,8 @@ var model;
     model.addFigure = addFigure;
     function addFigureRandom(tetris) {
         var r;
-        r = Math.floor(Math.random() * FIGURES.length);
-        return addFigure(tetris, r, Math.floor(Math.random() * FIGURES[r].length));
+        r = Math.floor(Math.random() * model.FIGURES.length);
+        return addFigure(tetris, r, Math.floor(Math.random() * model.FIGURES[r].length));
     }
     model.addFigureRandom = addFigureRandom;
     function setFigurePositionInFieldIfAble(field, fig, rot, dx, dy) {
@@ -263,4 +264,13 @@ var model;
         return lines.length;
     }
     model.removeCompletedLines = removeCompletedLines;
+    function clean(t) {
+        t.figure = null;
+        for (var i = 0; i < t.field.length; i++) {
+            for (var j = 0; j < t.field[i].length; ++j) {
+                t.field[i][j] = 0;
+            }
+        }
+    }
+    model.clean = clean;
 })(model || (model = {}));

@@ -30,6 +30,10 @@ module main {
 		prevTime: number
 		score: number
 		tetris: model.Tetris
+		farm: autoplay.Game[]
+		solv: solver.Solver
+		turn: solver.Turn
+		serie: boolean
 	}
 
 	var game: Game
@@ -79,7 +83,7 @@ module main {
 	}
 
 	function lostFocus(e: FocusEvent) {
-		if (game.state != GS_END) {
+		if ((game.solv == null) && (game.state != GS_END)) {
 			game.state = GS_PAUSE
 		}
 	}
@@ -115,10 +119,22 @@ module main {
 			pressedTStep : 0.1 * 2,
 			prevTime: -1,
 			score: 0,
-			tetris : model.createClassic()
+			tetris : model.createClassic(),
+
+			farm: autoplay.createGames(),
+			solv : null,
+			turn: null,
+			serie: false
 		}
 		draw.init(game.tetris)
 		model.addFigureRandom(game.tetris)
+
+		if (game.farm != null) {
+			game.solv = game.farm[0].s
+			game.solv.setTetris(game.tetris)
+			game.turn = game.solv.makeTurn()
+			game.step = 0.01
+		}
 
 		window.onkeydown = keydown
 		window.onkeyup = keyup
@@ -136,32 +152,64 @@ module main {
 		var dt, dx: number
 
 		if (game.prevTime >= 0) {
-			dt = (time - game.prevTime) / 1000
+			if (game.serie) {
+				game.serie = autoplay.series(game.farm)
+				if (!game.serie) {
+					game.solv = game.farm[0].s
+					game.solv.setTetris(game.tetris)
+					game.score = 0
+					model.clean(game.tetris)
 
-			if (game.state == GS_PLAY) {
-				game.tstep = game.tstep - dt * game.multstep
-				game.step = game.step - dt * game.dstep
-				if (game.tstep <= 0) {
-					if (!model.tryToMoveCurrentFigure(game.tetris, 0, 1)) {
-						game.multstep = 1
-						game.pressedLeft = 0
-						game.pressedRight = 0
-						model.embedCurrentFigureIntoField(game.tetris)
-						game.score += ((1 << model.removeCompletedLines(game.tetris)) - 1) * 100
-						document.getElementById('score').textContent = '' + game.score
+					model.addFigureRandom(game.tetris)
+					game.turn = game.solv.makeTurn()
+				}
+			} else {
+				dt = (time - game.prevTime) / 1000
 
-						if (!model.addFigureRandom(game.tetris)) {
-							game.state = GS_END
+				if (game.state == GS_PLAY) {
+					game.tstep = game.tstep - dt * game.multstep
+					if (game.farm == null) {
+						game.step = game.step - dt * game.dstep
+					}
+					if (game.tstep <= 0) {
+						if (!model.tryToMoveCurrentFigure(game.tetris, 0, 1)) {
+							game.multstep = 1
+							game.pressedLeft = 0
+							game.pressedRight = 0
+							model.embedCurrentFigureIntoField(game.tetris)
+							game.score += ((1 << model.removeCompletedLines(game.tetris)) - 1) * 100 + 10
+							document.getElementById('score').textContent = '' + game.score
+
+							if (!model.addFigureRandom(game.tetris)) {
+
+								if (game.farm != null) {
+									game.farm[0].s.setTetris(game.farm[0].t)
+									game.serie = autoplay.series(game.farm)
+								} else {
+									game.state = GS_END
+								}
+							} else if (game.solv != null) {
+								game.turn = game.solv.makeTurn()
+							}
+						}
+						game.tstep = game.step
+					}
+					dx = game.pressedLeft + game.pressedRight
+					if (dx != 0) {
+						game.pressedTStep -= dt
+						if (game.pressedTStep < 0) {
+							model.tryToMoveCurrentFigure(game.tetris, dx, 0)
+							game.pressedTStep = game.pressedStep
 						}
 					}
-					game.tstep = game.step
-				}
-				dx = game.pressedLeft + game.pressedRight
-				if (dx != 0) {
-					game.pressedTStep = game.pressedTStep - dt
-					if (game.pressedTStep < 0) {
-						model.tryToMoveCurrentFigure(game.tetris, dx, 0)
-						game.pressedTStep = game.pressedStep
+					if (game.turn != null) {
+						if (game.turn.rot != game.tetris.figure.rot) {
+							model.tryToRotateCurrentFigure(game.tetris)
+						} else if (game.turn.x < game.tetris.figure.x) {
+							model.tryToMoveCurrentFigure(game.tetris, -1, 0)
+						} else if (game.turn.x > game.tetris.figure.x) {
+							model.tryToMoveCurrentFigure(game.tetris, 1, 0)
+						}
 					}
 				}
 			}

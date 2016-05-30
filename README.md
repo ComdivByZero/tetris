@@ -1,2 +1,2 @@
-# tetris
-Minimalistic realization of Tetris without unnecessary things like score
+# Tetris
+Minimalistic realization of Tetris
